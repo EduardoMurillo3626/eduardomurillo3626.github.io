@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laberinto
+    </title>
+</head>
+<style>
+    canvas {
+        background-color: antiquewhite;
+
+
+    }
+</style>
+
+<body>
+    <canvas id="mycanvas" width="500px" height="500px">
+
+    </canvas>
+
+
+    <script>
+        var canvas = document.getElementById('mycanvas');
+        var ctx = canvas.getContext('2d');
+        var x = 255, y = 255;
+        var t_x = 50, t_y = 350;
+        var w_x = 100, w_y = 70;
+        var dir = 0;
+        var pause = false;
+        var score = 0;
+        var speed = 10;
+        let walls = [];
+        let hasWon = false;
+
+        // Define el laberinto como una matriz de 1s (paredes) y 0s (caminos)
+        const maze = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ];
+
+        // Tamaño de celda del laberinto
+        const mazeCellSize = canvas.width / maze[0].length;
+
+        // Función para dibujar el laberinto
+        function drawMaze() {
+            for (let row = 0; row < maze.length; row++) {
+                for (let col = 0; col < maze[row].length; col++) {
+                    if (maze[row][col] === 1) {
+                        const wall = new Rectangulo(col * mazeCellSize, row * mazeCellSize, mazeCellSize, mazeCellSize, "#1E2553");
+                        walls.push(wall);
+                    }
+                }
+            }
+        }
+
+        // Función para generar un color aleatorio
+        function generateRandomColor() {
+            const r = Math.floor(Math.random() * 256); // Valor de rojo entre 0 y 255
+            const g = Math.floor(Math.random() * 256); // Valor de verde entre 0 y 255
+            const b = Math.floor(Math.random() * 256); // Valor de azul entre 0 y 255
+            const a = Math.random(); // Valor de opacidad (alfa) entre 0 y 1
+
+            const rgbaColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+            return rgbaColor;
+        }
+
+        const randomColor = generateRandomColor();
+
+        class Rectangulo {
+            constructor(x, y, w, h, c) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+                this.c = c;
+            }
+
+            paint(ctx) {
+                ctx.fillStyle = this.c;
+                ctx.fillRect(this.x, this.y, this.w, this.h);
+                ctx.strokeRect(this.x, this.y, this.w, this.h);
+            }
+
+            seTocan(target) {
+
+                if (this.x < target.x + target.w &&
+                    this.x + this.w > target.x &&
+                    this.y < target.y + target.h &&
+                    this.y + this.h > target.y) {
+                    return true;
+                }
+                return false;
+
+            }
+        }
+
+        const player = new Rectangulo(410, 455, 30, 30, "red");
+        const target = new Rectangulo(50, 50, 50, 50, "#fff000");
+
+        document.addEventListener("keydown", (e) => {
+
+            switch (e.keyCode) {
+                case 87:
+                    dir = e.keyCode;
+
+                    break;
+                case 83:
+                    dir = e.keyCode;
+
+                    break;
+                case 68:
+                    dir = e.keyCode;
+
+                    break;
+                case 65:
+                    dir = e.keyCode;
+
+                    break;
+                case 32:
+                    dir = e.keyCode;
+                    pause = !pause;
+
+                    break;
+
+            }
+            //update();
+
+        })
+
+
+        function update() {
+            if (!pause) {
+                switch (dir) {
+                    case 87:
+                        player.y -= speed;
+                        if (player.y < -50) { player.y = 550 }
+                        break;
+                    case 83:
+                        player.y += speed;
+                        if (player.y > 550) { player.y = 0 }
+                        break;
+                    case 68:
+                        player.x += speed;
+                        if (player.x > 550) { player.x = 0 }
+                        break;
+                    case 65:
+                        player.x -= speed;
+                        if (player.x < -50) { player.x = 550 }
+                        break;
+                }
+                if (player.seTocan(target)) {
+
+                    hasWon = true;
+                    t_x = Math.random() * (460);
+                    t_y = Math.random() * (460);
+                    target.x = t_x;
+                    target.y = t_y;
+                    score += 10;
+                    speed++;
+
+                    console.log(score);
+
+                }
+
+                for (var i = walls.length - 1; i >= 0; i--) {
+
+                    if (player.seTocan(walls[i])) {
+
+                        switch (dir) {
+                            case 87:
+                                player.y += speed;
+                                break;
+                            case 83:
+                                player.y -= speed;
+                                break;
+                            case 68:
+                                player.x -= speed;
+                                break;
+                            case 65:
+                                player.x += speed;
+                                break;
+
+                        }
+
+
+                        dir = 0;
+
+                    }
+                }
+                repaint();
+
+            }
+            else {
+                // Mostrar la pantalla de pausa
+                ctx.fillStyle = "black";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "white";
+                ctx.font = "40px Arial";
+                ctx.fillText("PAUSE", canvas.width / 2 - 50, canvas.height / 2);
+            }
+
+
+            window.requestAnimationFrame(update);
+
+        }
+
+        function repaint() {
+
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, 500, 500);
+
+            if (!hasWon) {
+                // Dibuja el juego normalmente
+                player.paint(ctx);
+                target.paint(ctx);
+
+                for (var i = walls.length - 1; i >= 0; i--) {
+                    walls[i].paint(ctx);
+                }
+
+                drawScore();
+            } else {
+                // Dibuja la pantalla de victoria
+                ctx.fillStyle = "black";
+                ctx.fillRect(0, 0, 500, 500);
+                ctx.fillStyle = "white";
+                ctx.font = "40px Arial";
+                ctx.fillText("¡Ganaste!", canvas.width / 2 - 80, canvas.height / 2);
+            }
+        }
+        //score
+        function drawScore() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, 150, 50);
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 30);
+        }
+
+
+
+        window.requestAnimationFrame = (function () {
+            return window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                function (callback) {
+                    window.setTimeout(callback, 17);
+                };
+        }());
+
+        window.requestAnimationFrame(update);
+        drawMaze();
+
+    </script>
+</body>
+
+</html>
