@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laberinto
-    </title>
+    <link rel="shortcut icon" href="icono.png">
+    <title>Speedforce</title>
 </head>
 <style>
     canvas {
@@ -16,9 +16,12 @@
 </style>
 
 <body>
-    <canvas id="mycanvas" width="500px" height="500px">
-        <img src="FlashDerecha.gif" style="display: none;" alt="" id="myimg">
+    <canvas id="mycanvas" width="800px" height="600px">
     </canvas>
+    <audio controls>
+        <source src="FlashSong.mp3" type="audio/mpeg">
+    </audio>
+    <img src="Fondo.jpeg" style="display: none;" alt="" id="myimg">
 
 
     <script>
@@ -28,30 +31,46 @@
         var t_x = 50, t_y = 350;
         var w_x = 100, w_y = 70;
         var dir = 0;
-        var pause = false;
+        var pause = true;
         var score = 0;
-        var speed = 10;
+        var speed = 1;
         let walls = [];
         let hasWon = false;
         let image = new Image();
         image.src = "FlashParado.png"
-        let gifImage = new Image();
-        gifImage.src = "FlashDerecha.gif";
+        var tiempoRestante = 9500; // 60 segundos (puedes ajustar esto)
+        var tiempoLimite = tiempoRestante;
 
-        
         // Define el laberinto como una matriz de 1s (paredes) y 0s (caminos)
         const maze = [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+            [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+            [1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1],
+            [1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+            [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1],
+            [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1],
+            [1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1],
+            [1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ];
 
         // Tamaño de celda del laberinto
@@ -69,18 +88,6 @@
             }
         }
 
-        // Función para generar un color aleatorio
-        function generateRandomColor() {
-            const r = Math.floor(Math.random() * 256); // Valor de rojo entre 0 y 255
-            const g = Math.floor(Math.random() * 256); // Valor de verde entre 0 y 255
-            const b = Math.floor(Math.random() * 256); // Valor de azul entre 0 y 255
-            const a = Math.random(); // Valor de opacidad (alfa) entre 0 y 1
-
-            const rgbaColor = `rgba(${r}, ${g}, ${b}, ${a})`;
-            return rgbaColor;
-        }
-
-        const randomColor = generateRandomColor();
         class pared {
             constructor(x, y, w, h, c) {
                 this.x = x;
@@ -140,8 +147,10 @@
         }
 
 
-        const player = new Rectangulo(410, 455, 40, 40, generateRandomColor());
-        const target = new Rectangulo(50, 50, 50, 50, "#fff000");
+
+        const player = new Rectangulo(760, 502, 16, 16);
+        const target = new Rectangulo(20, 23, 18, 18, "#fff000");
+        const velocidad = new Rectangulo(957, 430, 10, 10, "#ff0000");
 
         document.addEventListener("keydown", (e) => {
 
@@ -171,29 +180,32 @@
                     break;
 
             }
-            //update();
 
         });
 
 
         function update() {
+
+            if (tiempoRestante === tiempoLimite) {
+                setInterval(actualizarTemporizador, 2000); // Actualiza cada segundo
+            }
             if (!pause) {
                 switch (dir) {
                     case 87:
                         player.y -= speed;
-                        if (player.y < -50) { player.y = 550 }
+                        if (player.y < -60) { player.y = 650 }
                         break;
                     case 83:
                         player.y += speed;
-                        if (player.y > 550) { player.y = 0 }
+                        if (player.y > 650) { player.y = 0 }
                         break;
                     case 68:
                         player.x += speed;
-                        if (player.x > 550) { player.x = 0 }
+                        if (player.x > 1050) { player.x = 0 }
                         break;
                     case 65:
                         player.x -= speed;
-                        if (player.x < -50) { player.x = 550 }
+                        if (player.x < -60) { player.x = 1050 }
                         break;
                 }
                 if (player.seTocan(target)) {
@@ -203,10 +215,11 @@
                     t_y = Math.random() * (460);
                     target.x = t_x;
                     target.y = t_y;
-                    score += 10;
-                    speed++;
 
-                    console.log(score);
+                }
+
+                if (player.seTocan(velocidad)) {
+                    speed++;
 
                 }
 
@@ -239,51 +252,75 @@
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = "white";
                 ctx.font = "40px Arial";
-                ctx.fillText("PAUSE", canvas.width / 2 - 50, canvas.height / 2);
+                ctx.fillText("P A U S A ", 320,50);
+                ctx.fillText("Bienvenido a la fuerza de velocidad, Flash ", 25,100);            
+                ctx.fillText("alguien te a encerrado aqui ", 170,150);          
+                ctx.fillText("ahora tendras que escapar", 170,200);  
+                ctx.fillText("Preciona la barra para comenzar", 100,500);       
             }
             window.requestAnimationFrame(update);
+            actualizarTemporizador();
         }
         function repaint() {
-            ctx.fillStyle = "#ffff";
-            ctx.fillRect(0, 0, 500, 500);
+
+
+            const imge = document.getElementById('myimg');
+            ctx.drawImage(imge, 0, 0, 1000, 550);
+            ctx.fillStyle = "#1E2540";
+            ctx.fillRect(0, 80, 20, 20);
+            ctx.fillRect(780, 80, 20, 20);
+
 
             if (!hasWon) {
                 // Dibuja el juego normalmente
-                player.c = generateRandomColor();
-                player.paint(ctx);
-                ctx.drawImage(image, player.x, player.y, 40, 40)
+                ctx.drawImage(image, player.x, player.y, 16, 16)
                 target.paint(ctx);
+                velocidad.paint(ctx)
 
                 for (var i = walls.length - 1; i >= 0; i--) {
                     walls[i].paint(ctx);
                 }
 
-                drawScore();
+
             } else {
                 // Dibuja la pantalla de victoria
                 ctx.fillStyle = "black";
-                ctx.fillRect(0, 0, 500, 500);
+                ctx.fillRect(0, 0, 1000, 600);
                 ctx.fillStyle = "white";
                 ctx.font = "40px Arial";
                 ctx.fillText("¡Ganaste!", canvas.width / 2 - 80, canvas.height / 2);
+                ctx.fillText("Recuerda flash, puedes", 170,500);
+                ctx.fillText("desfazar algunas areas", 170,550);
             }
         }
-        //score
-        function drawScore() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, 150, 50);
-            ctx.fillStyle = "white";
-            ctx.font = "20px Arial";
-            ctx.fillText("Score: " + score, 10, 30);
+
+        //temporizador
+        function actualizarTemporizador() {
+            if (!hasWon && !pause) {
+                tiempoRestante--;
+
+                if (tiempoRestante <= 0) {
+                    tiempoRestante = 0;
+                    mostrarPantallaPerdiste();
+                }
+
+                // Actualiza el temporizador en el canvas
+                ctx.fillStyle = "black";
+                ctx.fillRect(0, 0, 150, 25);
+                ctx.fillStyle = "white";
+                ctx.font = "20px Arial";
+                ctx.fillText("Tiempo: " + tiempoRestante + "s", 0, 18);
+            }
         }
-        window.requestAnimationFrame = (function () {
-            return window.requestAnimationFrame ||
-                window.webkitRequestAnimationFrame ||
-                window.mozRequestAnimationFrame ||
-                function (callback) {
-                    window.setTimeout(callback, 17);
-                };
-        }());
+
+        function mostrarPantallaPerdiste() {
+            // Muestra la pantalla negra de "Perdiste"
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            ctx.font = "40px Arial";
+            ctx.fillText("¡Perdiste!", canvas.width / 2 - 80, canvas.height / 2);
+        }
 
         window.requestAnimationFrame(update);
         drawMaze();
