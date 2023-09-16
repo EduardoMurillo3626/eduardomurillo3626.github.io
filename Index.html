@@ -18,8 +18,11 @@
 <body>
     <canvas id="mycanvas" width="800px" height="600px">
     </canvas>
-    <audio controls>
+    <audio controls autoplay>
         <source src="FlashSong.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="targetSound">
+        <source src="rayo.mp3" type="audio/mpeg">
     </audio>
     <img src="Fondo.jpeg" style="display: none;" alt="" id="myimg">
 
@@ -33,7 +36,7 @@
         var dir = 0;
         var pause = true;
         var score = 0;
-        var speed = 1;
+        var speed = 2;
         let walls = [];
         let hasWon = false;
         let image = new Image();
@@ -150,7 +153,6 @@
 
         const player = new Rectangulo(760, 502, 16, 16);
         const target = new Rectangulo(20, 23, 18, 18, "#fff000");
-        const velocidad = new Rectangulo(957, 430, 10, 10, "#ff0000");
 
         document.addEventListener("keydown", (e) => {
 
@@ -215,14 +217,11 @@
                     t_y = Math.random() * (460);
                     target.x = t_x;
                     target.y = t_y;
+                    var targetSound = document.getElementById('targetSound');
+                    targetSound.currentTime = 0; // Reinicia el sonido si ya está reproduciéndose
+                    targetSound.play();
 
                 }
-
-                if (player.seTocan(velocidad)) {
-                    speed++;
-
-                }
-
                 for (var i = walls.length - 1; i >= 0; i--) {
 
                     if (player.seTocan(walls[i])) {
@@ -252,11 +251,11 @@
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = "white";
                 ctx.font = "40px Arial";
-                ctx.fillText("P A U S A ", 320,50);
-                ctx.fillText("Bienvenido a la fuerza de velocidad, Flash ", 25,100);            
-                ctx.fillText("alguien te a encerrado aqui ", 170,150);          
-                ctx.fillText("ahora tendras que escapar", 170,200);  
-                ctx.fillText("Preciona la barra para comenzar", 100,500);       
+                ctx.fillText("P A U S A ", 320, 50);
+                ctx.fillText("Bienvenido a la fuerza de velocidad, Flash ", 25, 100);
+                ctx.fillText("alguien te a encerrado aqui ", 170, 150);
+                ctx.fillText("ahora tendras que escapar", 170, 200);
+                ctx.fillText("Preciona la barra para comenzar", 100, 500);
             }
             window.requestAnimationFrame(update);
             actualizarTemporizador();
@@ -275,7 +274,6 @@
                 // Dibuja el juego normalmente
                 ctx.drawImage(image, player.x, player.y, 16, 16)
                 target.paint(ctx);
-                velocidad.paint(ctx)
 
                 for (var i = walls.length - 1; i >= 0; i--) {
                     walls[i].paint(ctx);
@@ -289,8 +287,8 @@
                 ctx.fillStyle = "white";
                 ctx.font = "40px Arial";
                 ctx.fillText("¡Ganaste!", canvas.width / 2 - 80, canvas.height / 2);
-                ctx.fillText("Recuerda flash, puedes", 170,500);
-                ctx.fillText("desfazar algunas areas", 170,550);
+                ctx.fillText("Recuerda flash, puedes", 170, 500);
+                ctx.fillText("desfazar algunas areas", 170, 550);
             }
         }
 
